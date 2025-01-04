@@ -17,6 +17,7 @@ import java.util.*
 import kotlin.concurrent.timerTask
 
 class ActividadSonido : AppCompatActivity() {
+    // Declaración de variables para la grabación y reproducción de audio
     private lateinit var btnRecord: ImageButton
     private lateinit var btnStopRecord: ImageButton
     private lateinit var btnPlay: ImageButton
@@ -35,14 +36,14 @@ class ActividadSonido : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sonido)
 
-        // Solicitar permisos
+        // Solicitar permisos para grabar y almacenar audio
         ActivityCompat.requestPermissions(
             this,
             arrayOf(Manifest.permission.RECORD_AUDIO, Manifest.permission.WRITE_EXTERNAL_STORAGE),
             1000
         )
 
-        // Inicializar vistas
+        // Vincular vistas del diseño
         btnRecord = findViewById(R.id.btnRecord)
         btnStopRecord = findViewById(R.id.btnStopRecord)
         btnPlay = findViewById(R.id.btnPlay)
@@ -51,15 +52,17 @@ class ActividadSonido : AppCompatActivity() {
         seekBar = findViewById(R.id.seekBarAudio)
         tvAudioProgress = findViewById(R.id.tvAudioProgress)
 
-        // Archivo de audio
+        // Crear archivo para almacenar el audio
         audioFile = File(externalCacheDir, "audio_record.3gp")
 
+        // Configurar los botones con sus respectivas acciones
         btnRecord.setOnClickListener { startRecording() }
         btnStopRecord.setOnClickListener { stopRecording() }
         btnPlay.setOnClickListener { startPlaying() }
         btnStopPlay.setOnClickListener { stopPlaying() }
         btnBack.setOnClickListener { goBackToMainScreen() }
 
+        // Configuración del SeekBar para reproducción de audio
         seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 if (fromUser && mediaPlayer != null) {
@@ -73,6 +76,7 @@ class ActividadSonido : AppCompatActivity() {
         })
     }
 
+    // Método para iniciar la grabación de audio
     private fun startRecording() {
         mediaRecorder = MediaRecorder().apply {
             setAudioSource(MediaRecorder.AudioSource.MIC)
@@ -87,6 +91,7 @@ class ActividadSonido : AppCompatActivity() {
         btnStopRecord.isEnabled = true
     }
 
+    // Método para detener la grabación
     private fun stopRecording() {
         mediaRecorder?.apply {
             stop()
@@ -98,37 +103,33 @@ class ActividadSonido : AppCompatActivity() {
         btnStopRecord.isEnabled = false
     }
 
+    // Método para iniciar la reproducción de audio
     private fun startPlaying() {
         if (!audioFile.exists()) {
             Toast.makeText(this, "No hay grabaciones disponibles", Toast.LENGTH_SHORT).show()
             return
         }
 
-        // Inicializar el MediaPlayer si es nulo o si el SeekBar está al final
+        // Reproducir desde el inicio o continuar
         if (mediaPlayer == null || seekBar.progress == seekBar.max) {
             mediaPlayer = MediaPlayer().apply {
                 setDataSource(audioFile.absolutePath)
                 prepare()
             }
-            seekBar.progress = 0 // Reiniciar al principio si el SeekBar está al final
+            seekBar.progress = 0
         }
 
-        // Si se pausó, continuar desde la posición actual
         if (wasPaused) {
             mediaPlayer?.start()
             wasPaused = false
         } else {
-            // Reproducir desde la posición actual del SeekBar
             mediaPlayer?.seekTo(seekBar.progress)
             mediaPlayer?.start()
         }
 
         Toast.makeText(this, "Reproduciendo audio...", Toast.LENGTH_SHORT).show()
-
-        // Configurar el SeekBar y temporizador
         seekBar.max = mediaPlayer!!.duration
         startUpdatingSeekBar()
-
         btnPlay.isEnabled = false
         btnStopPlay.isEnabled = true
 
@@ -137,62 +138,78 @@ class ActividadSonido : AppCompatActivity() {
         }
     }
 
+    // Método para detener la reproducción de audio
     private fun stopPlaying(resetSeekBar: Boolean = false) {
         if (mediaPlayer?.isPlaying == true) {
+            // Si el audio está reproduciéndose, se pausa
             mediaPlayer?.pause()
-            wasPaused = true
+            wasPaused = true // Indica que la reproducción fue pausada
         } else {
+            // Si no está reproduciendo, liberar el MediaPlayer
             mediaPlayer?.release()
             mediaPlayer = null
-            wasPaused = false
+            wasPaused = false // Se reinicia el estado de pausa
         }
+
+        // Detener la actualización del SeekBar
         stopUpdatingSeekBar()
 
+        // Si se debe resetear el SeekBar al final del archivo
         if (resetSeekBar) {
-            seekBar.progress = seekBar.max // Forzar el SeekBar al máximo
+            seekBar.progress = seekBar.max // Mueve el SeekBar al final
         }
 
+        // Habilitar y deshabilitar botones según el estado
         btnPlay.isEnabled = true
         btnStopPlay.isEnabled = false
     }
 
+    // Método para iniciar la actualización del SeekBar
     private fun startUpdatingSeekBar() {
-        // Reducir el intervalo de actualización a 100ms para mayor precisión
+        // Temporizador para actualizar la posición del SeekBar mientras el audio se reproduce
         timer = Timer()
         timer?.scheduleAtFixedRate(timerTask {
             mediaPlayer?.let { player ->
                 if (player.isPlaying) {
+                    // Actualiza la posición del SeekBar en el hilo de la interfaz de usuario
                     runOnUiThread {
                         val position = player.currentPosition
-                        seekBar.progress = position
-                        updateProgressText(position)
+                        seekBar.progress = position // Sincroniza el SeekBar con la posición actual
+                        updateProgressText(position) // Actualiza el texto de progreso
                     }
                 }
             }
-        }, 0, 100) // Actualización más frecuente (cada 100 ms)
+        }, 0, 100) // Actualización cada 100 ms
     }
 
+    // Método para detener la actualización del SeekBar
     private fun stopUpdatingSeekBar() {
-        timer?.cancel()
-        timer = null
+        timer?.cancel() // Cancela el temporizador
+        timer = null // Libera la referencia
     }
 
+    // Método para actualizar el texto del progreso del audio
     private fun updateProgressText(currentPosition: Int) {
+        // Calcula el tiempo actual y el tiempo total del audio
         val totalDuration = mediaPlayer?.duration ?: 0
-        val currentTime = formatTime(currentPosition)
-        val totalTime = formatTime(totalDuration)
+        val currentTime = formatTime(currentPosition) // Tiempo actual formateado
+        val totalTime = formatTime(totalDuration) // Tiempo total formateado
+
+        // Actualiza el TextView con el formato "min:seg / min:seg"
         tvAudioProgress.text = "$currentTime / $totalTime"
     }
 
+    // Método para formatear el tiempo en milisegundos a "mm:ss"
     private fun formatTime(milliseconds: Int): String {
-        val seconds = (milliseconds / 1000) % 60
-        val minutes = (milliseconds / 1000) / 60
+        val seconds = (milliseconds / 1000) % 60 // Calcula los segundos
+        val minutes = (milliseconds / 1000) / 60 // Calcula los minutos
         return String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds)
     }
 
+    // Método para volver a la pantalla principal
     private fun goBackToMainScreen() {
-        val intent = Intent(this, MainActivity::class.java)
-        startActivity(intent)
-        finish()
+        val intent = Intent(this, MainActivity::class.java) // Crea un intent para MainActivity
+        startActivity(intent) // Inicia la actividad principal
+        finish() // Finaliza la actividad actual
     }
 }
