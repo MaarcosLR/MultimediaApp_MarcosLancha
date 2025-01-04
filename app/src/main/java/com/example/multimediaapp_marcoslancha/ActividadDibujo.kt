@@ -14,84 +14,92 @@ class ActividadDibujo : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_dibujo)
 
-        // Agregar la vista de dibujo al layout
-        val dibujoView = DibujoView(this)
-        val layout = findViewById<RelativeLayout>(R.id.layoutContainer) // Asegúrate de tener un contenedor como RelativeLayout
+        // Agregar la vista personalizada al contenedor
+        val dibujoView = LogoDibujoView(this)
+        val layout = findViewById<RelativeLayout>(R.id.layoutContainer)
         layout.addView(dibujoView)
 
-        // Configuración del botón
+        // Botón para volver
         val btnVolver = findViewById<Button>(R.id.btnVolver)
         btnVolver.setOnClickListener {
-            finish() // Cierra la actividad actual
+            finish()
         }
     }
 
-    inner class DibujoView(context: Context) : View(context) {
-        private val paint = Paint()
+    inner class LogoDibujoView(context: Context) : View(context) {
+        private val paint = Paint().apply {
+            isAntiAlias = true // Mejor calidad para los bordes
+        }
         private var desplazamiento = 0f
         private var direccion = true
-
-        // Declarar las RectF fuera de onDraw para evitar la asignación repetida
-        private val rectLogo = RectF()
-        private val rectElipse = RectF()
 
         override fun onDraw(canvas: Canvas) {
             super.onDraw(canvas)
 
-            // Calcular las coordenadas del centro de la pantalla
+            // Dibujar el logo con formas básicas y colores
+            drawLogo(canvas)
+
+            // Dibujar el nombre en un dibujo
+            drawName(canvas)
+
+            // Redibujar para animación
+            postInvalidateDelayed(30)
+        }
+
+        private fun drawLogo(canvas: Canvas) {
+            // Logo en la parte superior de la pantalla
             val centroX = width / 2f
             val centroY = height / 4f
 
-            // Dibujo del logo animado (círculo azul)
+            // Rectángulo azul
             paint.color = Color.BLUE
             paint.style = Paint.Style.FILL
-            canvas.drawCircle(centroX + desplazamiento, centroY, 120f, paint)
+            canvas.drawRect(centroX - 150f, centroY - 100f, centroX + 150f, centroY + 100f, paint)
 
-            // Rectángulo rojo alrededor del logo
+            // Círculo rojo centrado en el rectángulo
             paint.color = Color.RED
-            paint.style = Paint.Style.STROKE
+            canvas.drawCircle(centroX, centroY, 80f, paint)
+
+            // Línea diagonal animada
+            paint.color = Color.GREEN
             paint.strokeWidth = 8f
-            // Actualizar la posición del rectángulo sin crear el objeto cada vez
-            rectLogo.set(centroX + desplazamiento - 100f, centroY - 100f, centroX + desplazamiento + 100f, centroY + 100f)
-            canvas.drawRect(rectLogo, paint)
+            paint.style = Paint.Style.STROKE
+            canvas.drawLine(
+                centroX - 150f,
+                centroY - 100f + desplazamiento,
+                centroX + 150f,
+                centroY + 100f - desplazamiento,
+                paint
+            )
 
-            // Actualización de desplazamiento para la animación
-            desplazamiento = if (direccion) {
-                desplazamiento + 8f
-            } else {
-                desplazamiento - 8f
-            }
+            // Animación de la línea
+            desplazamiento = if (direccion) desplazamiento + 4f else desplazamiento - 4f
+            if (desplazamiento > 50 || desplazamiento < -50) direccion = !direccion
+        }
 
-            if (desplazamiento > 50 || desplazamiento < -50) {
-                direccion = !direccion
-            }
+        private fun drawName(canvas: Canvas) {
+            // Posición para el nombre más cerca del logo
+            val centroX = width / 2f
+            val centroY = height / 2.5f // Ajustar para estar más cerca del logo
 
-            // Dibujo de la elipse (centrada en la pantalla)
-            paint.color = Color.GREEN // Color de la elipse
+            // Dibujo de una elipse amarilla
+            paint.color = Color.YELLOW
             paint.style = Paint.Style.FILL
-            // Actualizar la posición de la elipse sin crear el objeto cada vez
-            rectElipse.set(centroX - 200f, centroY + 200f, centroX + 200f, centroY + 350f)
+            val rectElipse = RectF(centroX - 200f, centroY - 50f, centroX + 200f, centroY + 50f)
             canvas.drawOval(rectElipse, paint)
 
-            // Dibujo del texto "Marcos" en color negro, con rotación para hacerlo vertical
+            // Texto con el nombre "Marcos"
             val texto = "Marcos"
             paint.color = Color.BLACK
-            paint.textSize = 60f
+            paint.textSize = 50f
             paint.style = Paint.Style.FILL
             paint.textAlign = Paint.Align.CENTER
 
-            // Configuración de rotación para el texto (vertical)
+            // Dibujar texto inclinado
             canvas.save()
-            canvas.rotate(-90f, centroX, centroY + 275f) // Rotar alrededor del centro de la elipse
-
-            // Dibujo del texto "Marcos" centrado sobre la elipse
-            canvas.drawText(texto, centroX, centroY + 275f, paint)
-
-            // Restauración del canvas
+            canvas.rotate(-45f, centroX, centroY) // Rotar el texto
+            canvas.drawText(texto, centroX, centroY + 20f, paint)
             canvas.restore()
-
-            // Redibuja la vista con animación
-            postInvalidateDelayed(30)
         }
     }
 }
