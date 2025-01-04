@@ -1,6 +1,7 @@
 package com.example.multimediaapp_marcoslancha
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.media.MediaPlayer
 import android.media.MediaRecorder
@@ -16,6 +17,7 @@ import java.io.File
 import java.util.*
 import kotlin.concurrent.timerTask
 
+@Suppress("DEPRECATION")
 class ActividadSonido : AppCompatActivity() {
     // Declaración de variables para la grabación y reproducción de audio
     private lateinit var btnRecord: ImageButton
@@ -165,6 +167,7 @@ class ActividadSonido : AppCompatActivity() {
     }
 
     // Método para iniciar la actualización del SeekBar
+    @SuppressLint("DiscouragedApi")
     private fun startUpdatingSeekBar() {
         // Temporizador para actualizar la posición del SeekBar mientras el audio se reproduce
         timer = Timer()
