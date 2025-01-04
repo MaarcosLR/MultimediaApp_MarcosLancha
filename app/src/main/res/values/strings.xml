@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">MultimediaApp</string>
+    <string name="titulo_dibujo">Actividad de Dibujo</string>
+    <string name="titulo_sonido">Actividad de Sonido</string>
+    <string name="titulo_video">Actividad de Video</string>
+    <string name="iniciar_grabacion">Iniciar Grabación</string>
+    <string name="detener_grabacion">Detener Grabación</string>
+    <string name="reproducir_audio">Reproducir Audio</string>
+    <string name="detener_audio">Detener Audio</string>
+    <string name="dibujo_descripcion">Dibujo y animación del logo</string>
+    <string name="btnVolver">Volver</string>
+</resources>
