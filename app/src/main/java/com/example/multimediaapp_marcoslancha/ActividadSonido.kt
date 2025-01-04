@@ -192,6 +192,7 @@ class ActividadSonido : AppCompatActivity() {
     }
 
     // Método para actualizar el texto del progreso del audio
+    @SuppressLint("SetTextI18n")
     private fun updateProgressText(currentPosition: Int) {
         // Calcula el tiempo actual y el tiempo total del audio
         val totalDuration = mediaPlayer?.duration ?: 0
