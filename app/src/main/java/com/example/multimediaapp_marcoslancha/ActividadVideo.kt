@@ -1,6 +1,7 @@
 package com.example.multimediaapp_marcoslancha
 
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
@@ -14,68 +15,112 @@ import androidx.core.content.FileProvider
 import java.io.File
 
 class ActividadVideo : AppCompatActivity() {
-    // Declaración de variables para el VideoView, ruta del archivo, y lanzador de actividad
+
+    // Variables para el manejo del VideoView y archivo de video
     private lateinit var videoView: VideoView
     private lateinit var filePath: String
     private lateinit var videoCaptureLauncher: androidx.activity.result.ActivityResultLauncher<Intent>
+
+    // Código de solicitud para los permisos
+    companion object {
+        private const val PERMISSION_REQUEST_CODE = 1001
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_video)
 
-        // Vincular vistas del diseño
+        // Enlace de los elementos del diseño
         videoView = findViewById(R.id.videoView)
         val btnRecord = findViewById<ImageButton>(R.id.btnRecordVideo)
         val btnPlay = findViewById<ImageButton>(R.id.btnPlayVideo)
         val btnBack = findViewById<Button>(R.id.btnBack)
 
-        // Definir la ruta del archivo de video en el almacenamiento caché externo
+        // Definir la ruta para almacenar el video grabado
         filePath = "${externalCacheDir?.absolutePath}/video.mp4"
 
-        // Configuración del launcher para capturar video
+        // Configurar el lanzador para manejar la captura de video
         videoCaptureLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK) {
-                // Video capturado correctamente
+                // Mensaje al usuario si la grabación fue exitosa
                 Toast.makeText(this, "Video grabado correctamente", Toast.LENGTH_SHORT).show()
             } else {
-                // Si se cancela la grabación
-                Toast.makeText(this, "Grabación de video cancelada", Toast.LENGTH_SHORT).show()
+                // Mensaje al usuario si se canceló la grabación
+                Toast.makeText(this, "Grabación cancelada", Toast.LENGTH_SHORT).show()
             }
         }
 
         // Asignar acciones a los botones
-        btnRecord.setOnClickListener { captureVideo() }
-        btnPlay.setOnClickListener { playVideo() }
-        btnBack.setOnClickListener { finish() } // Finaliza la actividad actual
+        btnRecord.setOnClickListener { checkAndRequestPermissions() } // Grabar video con permisos
+        btnPlay.setOnClickListener { playVideo() } // Reproducir video grabado
+        btnBack.setOnClickListener { finish() } // Regresar a la pantalla anterior
     }
 
-    // Método para capturar video
+    /**
+     * Verifica y solicita los permisos necesarios para usar la cámara.
+     */
+    private fun checkAndRequestPermissions() {
+        val cameraPermission = android.Manifest.permission.CAMERA
+
+        // Si el permiso no está otorgado, se solicita al usuario
+        if (checkSelfPermission(cameraPermission) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(arrayOf(cameraPermission), PERMISSION_REQUEST_CODE)
+        } else {
+            // Si el permiso ya está otorgado, inicia la captura de video
+            captureVideo()
+        }
+    }
+
+    /**
+     * Maneja el resultado de la solicitud de permisos.
+     */
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == PERMISSION_REQUEST_CODE) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permiso otorgado
+                captureVideo()
+            } else {
+                // Permiso denegado, muestra un mensaje al usuario
+                Toast.makeText(this, "Permiso de cámara requerido para grabar video", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    /**
+     * Captura un video utilizando la cámara del dispositivo.
+     */
     private fun captureVideo() {
-        // Crear el archivo de video en la ruta definida
         val videoFile = File(filePath)
         val videoUri: Uri = FileProvider.getUriForFile(
             this,
-            "${applicationContext.packageName}.fileprovider", // Autoridad del FileProvider
+            "${applicationContext.packageName}.fileprovider",
             videoFile
         )
-        // Crear un intent para capturar video
+
         val intent = Intent(MediaStore.ACTION_VIDEO_CAPTURE).apply {
-            putExtra(MediaStore.EXTRA_OUTPUT, videoUri) // Indicar la salida del video
+            putExtra(MediaStore.EXTRA_OUTPUT, videoUri) // Indica la salida del video
             addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION) // Permitir escritura
         }
-        videoCaptureLauncher.launch(intent) // Lanzar la actividad para capturar video
+        videoCaptureLauncher.launch(intent)
     }
 
-    // Método para reproducir el video grabado
+    /**
+     * Reproduce el video grabado en el `VideoView`.
+     */
     private fun playVideo() {
         val videoFile = File(filePath)
         if (videoFile.exists()) {
-            // Configurar la URI del archivo en el VideoView
+            // Configura la URI del video en el VideoView y comienza la reproducción
             videoView.setVideoURI(Uri.fromFile(videoFile))
-            videoView.start() // Iniciar la reproducción
+            videoView.start()
         } else {
-            // Mostrar mensaje si no se encuentra el archivo
-            Toast.makeText(this, "No se encuentra el video", Toast.LENGTH_SHORT).show()
+            // Muestra un mensaje si no se encuentra el archivo de video
+            Toast.makeText(this, "No se encontró el video", Toast.LENGTH_SHORT).show()
         }
     }
 }
