@@ -10,35 +10,35 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
         android:gravity="center"
-        android:layout_margin="16dp">
+        android:layout_margin="16dp"
+        app:layout_constraintBottom_toTopOf="@+id/seekBarAudio"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
         <ImageButton
             android:id="@+id/btnRecord"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
             android:src="@drawable/ic_mic" />
 
         <ImageButton
             android:id="@+id/btnStopRecord"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
             android:src="@drawable/ic_stoprecordbtn"
             android:enabled="false" />
 
         <ImageButton
             android:id="@+id/btnPlay"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
             android:src="@drawable/ic_playbtn" />
 
         <ImageButton
             android:id="@+id/btnStopPlay"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
             android:src="@drawable/ic_pausebtn"
             android:enabled="false" />
     </LinearLayout>
@@ -48,27 +48,29 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="00:00 / 00:00"
-        app:layout_constraintTop_toBottomOf="@id/iconLayout"
+        android:layout_marginTop="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/seekBarAudio"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="8dp" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <SeekBar
         android:id="@+id/seekBarAudio"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/tvAudioProgress"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="8dp" />
+        app:layout_constraintEnd_toEndOf="parent"/>
 
     <Button
         android:id="@+id/btnBackToMain"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="100dp"
+        android:layout_height="70dp"
         android:text="@string/btnVolver"
+        android:layout_marginTop="16dp"
+        android:textSize="20dp"
         app:layout_constraintTop_toBottomOf="@id/seekBarAudio"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp" />
+        app:layout_constraintEnd_toEndOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

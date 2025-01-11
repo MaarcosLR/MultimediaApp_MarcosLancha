@@ -7,4 +7,5 @@
     <color name="colorLinea">#FF5722</color>
     <color name="colorRect">#FFEB3B</color>
     <color name="colorTexto">#4CAF50</color>
+    <color name="Negro">#000000</color>
 </resources>
